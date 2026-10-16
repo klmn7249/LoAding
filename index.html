@@ -146,7 +146,7 @@ function intro(){
   ok.style.display='none';
   type(say,"Welcome adventurer! What's your name?",()=>{inp.style.display='block';ok.style.display='inline-block';ok.textContent='OK';inp.focus()});
   const sub=()=>{const n=inp.value.trim().slice(0,12);if(!n){beep(150,.2);inp.focus();return}S.name=n;save();music();beep(880,.1);inp.style.display='none';ok.textContent="LET'S GO";
-    type(say,'Follow me, here you can play three greatest of all games. By playing you can collect tokens and reveal special rewards.');ok.onclick=()=>{beep(990,.1);toMain()}};
+    type(say,'Follow me! Here you can play three of the greatest games of all time. By playing you can collect tokens and reveal special rewards.');ok.onclick=()=>{beep(990,.1);toMain()}};
   ok.onclick=sub;inp.onkeydown=e=>{if(e.key==='Enter')sub()};
 }
 
