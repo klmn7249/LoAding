@@ -196,7 +196,7 @@ function egg(){
   e.style.display='flex';void e.offsetWidth;e.classList.add('on');rt=rain($('#rn'));beep(80,.6,'sawtooth',.06);
   setTimeout(()=>{h.classList.add('on');
     const l1="> What are you doing here? You're not supposed to be here!\n";
-    const l2="> Hm... Well, if you've come this far, you may as well help me. Deliver my message to @"+IG+"...";
+    const l2="> Hm... Well, if you've come this far, you may as well help me. Deliver my message to @"+IG+" on Instagram:";
     type(t,l1,()=>setTimeout(()=>{const b=l1;let i=0;clearInterval(t._t);t._t=setInterval(()=>{t.textContent=b+'\n'+l2.slice(0,++i);if(i>=l2.length){clearInterval(t._t);setTimeout(()=>{f.style.display='block';cp.style.display='block';beep(300,.4,'triangle',.06)},700)}},30)},500),40)},1300);
 }
 $('#cp').onclick=()=>{const m=EGG_MSG(S.name||'?');const ok=()=>{$('#cp').textContent='COPIED!';setTimeout(()=>$('#cp').textContent='COPY MESSAGE',1800)};
