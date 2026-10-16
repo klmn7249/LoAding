@@ -166,7 +166,7 @@ function openTr(){
   $('#tpb').style.width=nx?Math.min(100,(S.tokens-prev)/(nx.n-prev)*100)+'%':'100%';
   const tl=$('#tl');tl.innerHTML='';
   LV.forEach((l,i)=>{const ok=i<L,r=document.createElement('button');r.className='row';r.disabled=!ok;
-    r.innerHTML=`<img class="pix" width="44" height="40" src="${cup(ok?l.c:GRAY)}" alt=""><span>${l.t}<small>${ok?'TAP: REVEAL QR CODE':l.n+' TOKENS NEEDED'}</small></span>`;
+    r.innerHTML=`<img class="pix" width="44" height="40" src="${cup(ok?l.c:GRAY)}" alt=""><span>${l.t}<small>${ok?'TAP TO REVEAL REWARD':l.n+' TOKENS NEEDED'}</small></span>`;
     r.onclick=()=>{beep(880,.1);qr(l)};tl.append(r)});
   $('#tm').classList.add('on');
 }
