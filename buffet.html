@@ -37,7 +37,7 @@ Beállítás: az API sorba kerül az Apps Script webalkalmazás címe (/exec-re 
 <footer><button class="ghost" id="lo">PIN törlése</button></footer>
 
 <script>
-const API='PASTE_APPS_SCRIPT_URL_HERE';
+const API='https://script.google.com/macros/s/AKfycbyCnkKWPTK9WMdfxV_sZD8JDc6PeF8qiGYnB2FH_0l2RBa0PiwcuR9uSC_Taza9gIa2/exec';
 const LV={silver:'EZÜST',gold:'ARANY',diamond:'GYÉMÁNT',joker:'JOKER'};
 const $=s=>document.querySelector(s),M=$('#m');
 let code=(new URLSearchParams(location.search).get('c')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4);
