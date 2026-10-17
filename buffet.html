@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#1b1b2f">
+<title>Büfé ellenőrző</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:#1b1b2f;color:#fff}
+body{min-height:100vh;display:flex;flex-direction:column;transition:background .2s}
+body.ok{background:#12803a}body.used{background:#c0392b}body.warn{background:#d68910}body.bad{background:#7b241c}body.wait{background:#2c3e50}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 18px;gap:14px}
+h1{margin:0;font-size:26px}
+.big{font-size:30px;font-weight:800;line-height:1.15;letter-spacing:.5px}
+.prize{font-size:34px;font-weight:800;background:rgba(0,0,0,.28);padding:14px 20px;border-radius:14px;max-width:100%;word-break:break-word}
+.info{font-size:19px;line-height:1.5;opacity:.95}
+.info b{font-weight:700}
+.card{background:rgba(255,255,255,.14);border-radius:14px;padding:14px 18px;font-size:19px;line-height:1.55;max-width:100%}
+input{font-size:30px;text-align:center;padding:14px;width:min(80vw,260px);border-radius:12px;border:3px solid #fff;background:#fff;color:#111;letter-spacing:6px}
+input.txt{letter-spacing:4px;text-transform:uppercase}
+button{font-size:22px;font-weight:700;padding:14px 26px;border:0;border-radius:12px;background:#fff;color:#111;cursor:pointer}
+button.ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.6);font-size:15px;padding:8px 14px;font-weight:600}
+svg{width:min(52vw,230px);height:auto}
+footer{padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));text-align:center;font-size:13px;opacity:.8}
+.err{color:#ffd7d2;font-size:18px;min-height:24px}
+</style>
+</head>
+<body>
+<!--
+BÜFÉS ELLENŐRZŐ OLDAL. Nincs hivatkozás erre az oldalra a játékoldalról, csak a kupon QR-kódja vezet ide (?c=KOD).
+Az oldal csak érvényes büfés PIN-nel működik, a PIN-eket a Google Táblázat "PINs" füle tartalmazza.
+Beállítás: az API sorba kerül az Apps Script webalkalmazás címe (/exec-re végződik).
+-->
+<main id="m"></main>
+<footer><button class="ghost" id="lo">PIN törlése</button></footer>
+
+<script>
+const API='PASTE_APPS_SCRIPT_URL_HERE';
+const LV={silver:'EZÜST',gold:'ARANY',diamond:'GYÉMÁNT',joker:'JOKER'};
+const $=s=>document.querySelector(s),M=$('#m');
+let code=(new URLSearchParams(location.search).get('c')||'').toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,4);
+const getPin=()=>{try{return localStorage.getItem('bf_pin')||''}catch(e){return ''}};
+const setPin=v=>{try{v?localStorage.setItem('bf_pin',v):localStorage.removeItem('bf_pin')}catch(e){}};
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+async function api(p){
+  if(API.indexOf('PASTE')>=0)throw new Error('no api');
+  const u=new URL(API);for(const k in p)u.searchParams.set(k,p[k]);
+  const c=new AbortController(),t=setTimeout(()=>c.abort(),15000);
+  try{const r=await fetch(u.toString(),{signal:c.signal});return await r.json()}finally{clearTimeout(t)}
+}
+const CHECK='<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#fff"/><path d="M26 52l16 16 32-36" fill="none" stroke="#12803a" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const CROSS='<svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="#fff"/><path d="M32 32l36 36M68 32L32 68" fill="none" stroke="#7b241c" stroke-width="12" stroke-linecap="round"/></svg>';
+function view(cls,html){document.body.className=cls;M.innerHTML=html}
+function retryBtn(){const b=$('#again');if(b)b.onclick=run}
+
+function pinScreen(msg){
+  view('wait','<h1>Büfés belépés</h1><div class="info">Add meg a büfés PIN-kódot.<br>Ezt csak egyszer kell megadni ezen a telefonon.</div><input id="pin" type="tel" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="••••"><div class="err" id="pe">'+esc(msg||'')+'</div><button id="pb">BELÉPÉS</button>');
+  const go=async()=>{const v=$('#pin').value.trim();if(!/^\d{4}$/.test(v)){$('#pe').textContent='A PIN 4 számjegy.';return}
+    $('#pb').disabled=true;$('#pe').textContent='Ellenőrzés...';
+    try{const r=await api({a:'pin',pin:v});if(r.ok){setPin(v);run()}else{$('#pb').disabled=false;$('#pe').textContent='Hibás vagy letiltott PIN.'}}
+    catch(e){$('#pb').disabled=false;$('#pe').textContent='Nincs kapcsolat. Próbáld újra'}};
+  $('#pb').onclick=go;$('#pin').onkeydown=e=>{if(e.key==='Enter')go()};$('#pin').focus();
+}
+function scanScreen(){
+  view('wait','<h1>Büfé ellenőrző</h1><div class="info">Olvasd be a diák QR-kódját a telefon kamerájával.<br>Vagy írd be a 4 karakteres kódot kézzel:</div><input id="cd" class="txt" maxlength="4" autocomplete="off" placeholder="A123"><button id="cb">ELLENŐRZÉS</button>');
+  const go=()=>{const v=$('#cd').value.toUpperCase().replace(/[^A-Z0-9]/g,'');if(v.length===4){code=v;run()}};
+  $('#cb').onclick=go;$('#cd').onkeydown=e=>{if(e.key==='Enter')go()};
+}
+function details(r){
+  return '<div class="card"><b>'+esc(r.prize)+'</b><br>Szint: '+esc(LV[r.level]||r.level)+'<br>Játékos: <b>'+esc(r.name)+'</b><br>Kód: '+esc(r.code)+(r.at?'<br>Érvényesítve: '+esc(r.at):'')+(r.by?'<br>Ki: '+esc(r.by):'')+'</div>';
+}
+async function run(){
+  const pin=getPin();
+  if(!pin)return pinScreen();
+  if(!code)return scanScreen();
+  view('wait','<h1>Ellenőrzés...</h1><div class="info">'+esc(code)+'</div>');
+  let r;
+  try{r=await api({a:'redeem',code:code,pin:pin})}
+  catch(e){view('bad','<div class="big">Nincs kapcsolat.<br>Próbáld újra</div><button id="again">ÚJRA</button>');return retryBtn()}
+  if(!r||r.ok===false){
+    if(r&&r.err==='PIN'){setPin('');return pinScreen('A PIN már nem érvényes. Add meg újra.')}
+    view('bad','<div class="big">Hiba történt.<br>Próbáld újra</div><button id="again">ÚJRA</button>');return retryBtn();
+  }
+  const st=r.state;
+  if(st==='valid')view('ok',CHECK+'<div class="big">KUPON ÉRVÉNYES</div><div class="prize">'+esc(r.prize)+'</div><div class="info">Játékos: <b>'+esc(r.name)+'</b> &middot; '+esc(LV[r.level]||r.level)+'<br>Most érvényesítve: '+esc(r.at)+'</div>');
+  else if(st==='used')view('used','<div class="big">MÁR ÉRVÉNYESÍTVE</div>'+'<div class="prize">'+esc(r.prize)+'</div>'+details(r));
+  else if(st==='pending')view('warn','<div class="big">JÓVÁHAGYÁSRA VÁR</div><div class="info">Ez a JOKER kupon még nincs jóváhagyva.<br>Ne add ki a terméket.</div>'+details(r));
+  else if(st==='soldout')view('warn','<div class="big">A TERMÉK ELFOGYOTT</div><div class="info">A diák a játékban kérhet cserét (a trófea menüben).</div>'+details(r));
+  else if(st==='replaced')view('bad',CROSS+'<div class="big">ÉRVÉNYTELEN KUPON</div><div class="info">Ezt a kupont lecserélték egy újra.<br>Kérd az új QR-kódot.</div>');
+  else view('bad',CROSS+'<div class="big">ISMERETLEN KUPON</div><div class="info">Kód: '+esc(code)+'</div><button id="again" onclick="code=\'\';run()">ÚJ KUPON</button>');
+}
+$('#lo').onclick=()=>{setPin('');run()};
+run();
+</script>
+</body>
+</html>
