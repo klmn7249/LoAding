@@ -171,7 +171,7 @@ function openTr(){
   $('#tm').classList.add('on');
 }
 function qr(l){
-  const b=$('#qb');b.innerHTML='';$('#qt').textContent=l.'SCAN OR TAP:';const u=QR[l.id];
+  const b=$('#qb');b.innerHTML='';$('#qt').textContent='SCAN OR TAP:';const u=QR[l.id];
   if(!u)b.textContent='REWARD LINK COMING SOON';
   else if(window.QRCode){const a=document.createElement('a');a.href=u;a.target='_blank';a.rel='noopener noreferrer';a.style.cssText='display:inline-block';const w=document.createElement('div');w.style.cssText='background:#fff;padding:12px;display:inline-block';a.append(w);b.append(a);new QRCode(w,{text:u,width:200,height:200})}
   //else if(window.QRCode){const w=document.createElement('div');w.style.cssText='background:#fff;padding:12px;display:inline-block';b.append(w);new QRCode(w,{text:u,width:200,height:200})} CHANGED SO THAT THE CODE CAN BE TOUCHED.
